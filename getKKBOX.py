@@ -25,7 +25,8 @@ try:
                 command, (chart["id"], chart["name"], chart["album"]["artist"]["name"]))
         # 儲存變更
         conn.commit() 
-        print("SQL OK")
+        print("SQL OK and commit")
+
 
 except Exception as ex:
     print(ex)
