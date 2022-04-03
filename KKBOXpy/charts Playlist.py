@@ -1,4 +1,7 @@
-##瞭解API的基本觀念，以及學會如何解析Python存取API後的回傳結果，並且篩選所需的欄位
+##由於需要發出request請求，所以引用requests套件(Package)，
+# 並且根據API Reference(API參考文件)，分別指派API網址、標頭(Header)及參數(data)資訊，
+# 接著透過requests套件(Package)的post方法取得結果，最後利用json()方法將結果轉換為字典(Dictionary)，
+# 再使用 [] 符號讀取憑證欄位資料。
 import requests
 
 #取得Token
@@ -56,8 +59,8 @@ def get_charts_tracks(chart_id):
     result = response.json()["data"]
     return result 
 
-    get_charts()
-print("==========================H_PilcVhX-E8N0qr1-=================")
+get_charts()
+print("==========================複製一組API取得=================")
 try:
     chart_id = input("請貼上想聽的音樂排行榜ID: ")
     get_charts_tracks(chart_id)
