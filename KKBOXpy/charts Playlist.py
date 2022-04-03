@@ -1,3 +1,4 @@
+##瞭解API的基本觀念，以及學會如何解析Python存取API後的回傳結果，並且篩選所需的欄位
 import requests
 
 #取得Token
@@ -6,10 +7,10 @@ def get_access_token():
     url="https://account.kkbox.com/oauth2/token"
     #標頭
     headers={
-        "Content-Type":"application/x-www-form-urlencoded", #這裡別打錯了
+        "Content-Type":"application/x-www-form-urlencoded", #
         "Host":"account.kkbox.com"
     }
-    
+
     #參數
     data={
         "grant_type":"client_credentials",
