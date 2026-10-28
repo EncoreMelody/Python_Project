@@ -1,56 +1,76 @@
+import os
 import requests
+from dotenv import load_dotenv
 
-#取得Token
+# 自動載入 .env 檔案
+load_dotenv()
+
+
 def get_access_token():
-    #API網址
-    url="https://account.kkbox.com/oauth2/token"
-    #標頭
-    headers={
-        "Content-Type":"application/x-www-form-urlencoded", #這裡別打錯了
-        "Host":"account.kkbox.com"
-    }
-    #參數
-    data={
-        "grant_type":"client_credentials",
-        "client_id":"e8049b75df12f3e2630df26a155a7c38",
-        "client_secret":"9fdfaddbd9c4009550f9dfba0035b5aa"
-    }
-    access_token = requests.post(url,headers=headers,data=data)
-    return access_token.json()["access_token"]
-# --------------------    
-# 取得該音樂排行榜的歌曲列表
-def get_charts():
-    #取得存取憑證
-    access_token = get_access_token() 
-   #取得音樂排行榜列表API網址
-    url = "https://api.kkbox.com/v1.1/charts"
-    #標頭
-    headers = {
-        "accept": "application/json",
-        "authorization": "Bearer " + access_token  #帶著存取憑證
-    }
-    #參數
-    params = {
-        "territory": "TW"  #台灣領域  
-    }
-    response = requests.get(url, headers=headers, params=params)
-    result = response.json()["data"]
-    for item in result:
-        print(item["id"], item["title"])
-get_charts()
+    """取得 KKBOX OAuth 2.0 存取憑證 (Client Credentials Flow)"""
+    client_id = os.getenv("KKBOX_CLIENT_ID")
+    client_secret = os.getenv("KKBOX_CLIENT_SECRET")
 
-# 取得該音樂排行榜的歌曲列表
-def get_charts_tracks(chart_id):
+    if not client_id or not client_secret:
+        raise ValueError(
+            "未偵測到 KKBOX API 憑證！請建立 .env 檔案並設定 KKBOX_CLIENT_ID 與 KKBOX_CLIENT_SECRET。"
+        )
+
+    url = "https://account.kkbox.com/oauth2/token"
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Host": "account.kkbox.com"
+    }
+    data = {
+        "grant_type": "client_credentials",
+        "client_id": client_id,
+        "client_secret": client_secret
+    }
+
+    response = requests.post(url, headers=headers, data=data)
+    response.raise_for_status()
+    return response.json().get("access_token")
+
+
+def get_charts(territory="TW"):
+    """取得指定地區的音樂排行榜列表"""
     access_token = get_access_token()
-    url = "https://api.kkbox.com/v1.1/charts/" + chart_id + "/tracks"
+    url = "https://api.kkbox.com/v1.1/charts"
     headers = {
         "accept": "application/json",
-        "authorization": "Bearer " + access_token
+        "authorization": f"Bearer {access_token}"
     }
     params = {
-        "territory": "TW"
+        "territory": territory
     }
+
     response = requests.get(url, headers=headers, params=params)
-    result = response.json()["data"]
-    return result 
-#簡化
+    response.raise_for_status()
+    return response.json().get("data", [])
+
+
+def get_charts_tracks(chart_id, territory="TW"):
+    """取得指定排行榜的歌曲清單"""
+    access_token = get_access_token()
+    url = f"https://api.kkbox.com/v1.1/charts/{chart_id}/tracks"
+    headers = {
+        "accept": "application/json",
+        "authorization": f"Bearer {access_token}"
+    }
+    params = {
+        "territory": territory
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+    return response.json().get("data", [])
+
+
+if __name__ == "__main__":
+    print("=== 取得 KKBOX 台灣排行榜列表 ===")
+    try:
+        charts_list = get_charts()
+        for item in charts_list:
+            print(f"ID: {item.get('id')} | 標題: {item.get('title')}")
+    except Exception as e:
+        print(f"執行失敗: {e}")
